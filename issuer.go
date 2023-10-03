@@ -6,8 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/fainc/go-crypto/aes"
-	"github.com/fainc/go-crypto/gm"
+	"github.com/fainc/go-crypto/crypto"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 )
@@ -20,7 +19,7 @@ type IssuerConf struct {
 	JwtAlgo      string            `dc:"* 指定JWT签名算法，支持 ES256(建议)，HS256(不建议)"`
 	JwtPrivate   *ecdsa.PrivateKey `dc:"*(根据算法二选一) jwt签名私钥证书，根据签名算法选择，ES256应传私钥加签"`
 	JwtSecret    string            `dc:"*(根据算法二选一) jwt签名密钥，根据签名算法选择，HS256应传不低于32位字符密钥加签"`
-	CryptoAlgo   string            `dc:"可选，加密算法 支持AES和SM4(CBC模式)，不传则不进行加密"`
+	CryptoAlgo   string            `dc:"可选，加密算法 支持AES_CBC_PKCS7和SM4_CBC，不传则不进行加密"`
 	CryptoSecret string            `dc:"可选，加密密钥，加密字段：UserID Ext"`
 }
 
@@ -90,28 +89,14 @@ func (rec *issuer) defaultParams(params *IssueParams) {
 
 // encrypt 签发数据加密
 func (rec *issuer) encrypt(params *IssueParams) (err error) {
-	if rec.conf.CryptoAlgo == AlgoAES { // AES 256 CBC 加密
-		if params.UserID != "" {
-			if params.UserID, err = aes.CBC().Encrypt(rec.conf.CryptoSecret, params.UserID); err != nil {
-				return
-			}
-		}
-		if params.Ext != "" {
-			if params.Ext, err = aes.CBC().Encrypt(rec.conf.CryptoSecret, params.Ext); err != nil {
-				return
-			}
+	if params.UserID != "" {
+		if params.UserID, err = crypto.EasyEncrypt(rec.conf.CryptoAlgo, rec.conf.CryptoSecret, params.UserID, false); err != nil {
+			return err
 		}
 	}
-	if rec.conf.CryptoAlgo == AlgoSM4 { // SM4 128 CBC 加密
-		if params.UserID != "" {
-			if params.UserID, err = gm.Sm4().Encrypt(rec.conf.CryptoSecret, params.UserID, "CBC", false); err != nil {
-				return
-			}
-		}
-		if params.Ext != "" {
-			if params.Ext, err = gm.Sm4().Encrypt(rec.conf.CryptoSecret, params.Ext, "CBC", false); err != nil {
-				return
-			}
+	if params.Ext != "" {
+		if params.Ext, err = crypto.EasyEncrypt(rec.conf.CryptoAlgo, rec.conf.CryptoSecret, params.Ext, false); err != nil {
+			return err
 		}
 	}
 	return

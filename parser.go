@@ -7,10 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/fainc/go-crypto/gm"
+	"github.com/fainc/go-crypto/crypto"
 	"github.com/golang-jwt/jwt/v5"
-
-	"github.com/fainc/go-crypto/aes"
 )
 
 type parser struct {
@@ -100,21 +98,11 @@ func (rec *parser) decrypt(claims *TokenClaims) (err error) {
 	if claims.CryptoAlgo != AlgoAES && claims.CryptoAlgo != AlgoSM4 {
 		return errors.New("encrypted token:crypto algo unsupported")
 	}
-	if claims.CryptoAlgo == AlgoAES {
-		if claims.UserID, err = aes.CBC().Decrypt(rec.conf.CryptoSecret, claims.UserID); err != nil {
-			return errors.New("encrypted token:aes decrypt failed")
-		}
-		if claims.Ext, err = aes.CBC().Decrypt(rec.conf.CryptoSecret, claims.Ext); err != nil {
-			return errors.New("encrypted token:aes decrypt failed")
-		}
+	if claims.UserID, err = crypto.EasyDecrypt(claims.CryptoAlgo, rec.conf.CryptoSecret, claims.UserID, false); err != nil {
+		return errors.New("encrypted token: decrypt failed")
 	}
-	if claims.CryptoAlgo == AlgoSM4 {
-		if claims.UserID, err = gm.Sm4().Decrypt(rec.conf.CryptoSecret, claims.UserID, "CBC", false); err != nil {
-			return errors.New("encrypted token:sm4 decrypt failed")
-		}
-		if claims.Ext, err = gm.Sm4().Decrypt(rec.conf.CryptoSecret, claims.Ext, "CBC", false); err != nil {
-			return errors.New("encrypted token:sm4 decrypt failed")
-		}
+	if claims.Ext, err = crypto.EasyDecrypt(claims.CryptoAlgo, rec.conf.CryptoSecret, claims.Ext, false); err != nil {
+		return errors.New("encrypted token: decrypt failed")
 	}
 	return
 }
