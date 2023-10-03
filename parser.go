@@ -96,13 +96,13 @@ func (rec *parser) keyHandle(token *jwt.Token) (interface{}, error) {
 }
 func (rec *parser) decrypt(claims *TokenClaims) (err error) {
 	if claims.CryptoAlgo != AlgoAES && claims.CryptoAlgo != AlgoSM4 {
-		return errors.New("encrypted token:crypto algo unsupported")
+		return errors.New("decrypted token: crypto algo unsupported")
 	}
 	if claims.UserID, err = crypto.EasyDecrypt(claims.CryptoAlgo, rec.conf.CryptoSecret, claims.UserID, false); err != nil {
-		return errors.New("encrypted token: decrypt failed")
+		return errors.New("decrypted token: decrypt failed")
 	}
 	if claims.Ext, err = crypto.EasyDecrypt(claims.CryptoAlgo, rec.conf.CryptoSecret, claims.Ext, false); err != nil {
-		return errors.New("encrypted token: decrypt failed")
+		return errors.New("decrypted token: decrypt failed")
 	}
 	return
 }
@@ -137,7 +137,10 @@ func (rec *parser) Validate(params ValidateParams) (res *TokenClaims, err error)
 			return nil, err
 		}
 	}
-	if claims.CryptoAlgo != "" && rec.conf.CryptoSecret != "" {
+	if claims.CryptoAlgo != "" {
+		if rec.conf.CryptoSecret == "" {
+			return nil, errors.New("secret invalid")
+		}
 		if err = rec.decrypt(claims); err != nil {
 			return nil, err
 		}
