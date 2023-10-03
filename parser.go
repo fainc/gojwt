@@ -101,18 +101,18 @@ func (rec *parser) decrypt(claims *TokenClaims) (err error) {
 		return errors.New("encrypted token:crypto algo unsupported")
 	}
 	if claims.CryptoAlgo == AlgoAES {
-		if claims.UserID, err = aes.CBC().Decrypt(claims.UserID, rec.conf.CryptoSecret); err != nil {
+		if claims.UserID, err = aes.CBC().Decrypt(rec.conf.CryptoSecret, claims.UserID); err != nil {
 			return errors.New("encrypted token:aes decrypt failed")
 		}
-		if claims.Ext, err = aes.CBC().Decrypt(claims.Ext, rec.conf.CryptoSecret); err != nil {
+		if claims.Ext, err = aes.CBC().Decrypt(rec.conf.CryptoSecret, claims.Ext); err != nil {
 			return errors.New("encrypted token:aes decrypt failed")
 		}
 	}
 	if claims.CryptoAlgo == AlgoSM4 {
-		if claims.UserID, err = gm.Sm4().Decrypt("CBC", rec.conf.CryptoSecret, claims.UserID, false); err != nil {
+		if claims.UserID, err = gm.Sm4().Decrypt(rec.conf.CryptoSecret, claims.UserID, "CBC", false); err != nil {
 			return errors.New("encrypted token:sm4 decrypt failed")
 		}
-		if claims.Ext, err = gm.Sm4().Decrypt("CBC", rec.conf.CryptoSecret, claims.Ext, false); err != nil {
+		if claims.Ext, err = gm.Sm4().Decrypt(rec.conf.CryptoSecret, claims.Ext, "CBC", false); err != nil {
 			return errors.New("encrypted token:sm4 decrypt failed")
 		}
 	}

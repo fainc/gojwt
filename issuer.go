@@ -47,32 +47,32 @@ func (rec *issuer) check(params *IssueParams) (err error) {
 	switch rec.conf.JwtAlgo { // 签名算法校验
 	case AlgoHS256:
 		if len(rec.conf.JwtSecret) < 32 {
-			return errors.New("HS256签发算法 需要32位以上密钥")
+			return errors.New("HS256 requires a key of more than 32 bits")
 		}
 	case AlgoES256:
 		if rec.conf.JwtPrivate == nil {
-			return errors.New("ES256签发算法 私钥不能为空")
+			return errors.New("key can not be null")
 		}
 	default:
-		return errors.New("指定签发算法无效")
+		return errors.New("unsupported algo")
 	}
 	if rec.conf.CryptoAlgo != "" { // 加密算法密码强度校验
 		switch rec.conf.CryptoAlgo {
 		case AlgoAES:
 			if len(rec.conf.CryptoSecret) != 32 {
-				return errors.New("AES加密需要32位密钥(AES 256)")
+				return errors.New("AES requires a key of more than 32 bits")
 			}
 		case AlgoSM4:
 			if len(rec.conf.CryptoSecret) != 16 {
-				return errors.New("SM4加密需要16位密钥(SM4 128)")
+				return errors.New("SM4 requires a key of more than 16 bits")
 			}
 		default:
-			return errors.New("不支持的加密算法")
+			return errors.New("unsupported algo")
 		}
 	}
 	// 签发参数校验
 	if params.UserID == "" || params.Duration <= 0 || params.Subject == "" {
-		return errors.New("签发基础参数错误")
+		return errors.New("issuer:params missing")
 	}
 	return
 }
@@ -92,24 +92,24 @@ func (rec *issuer) defaultParams(params *IssueParams) {
 func (rec *issuer) encrypt(params *IssueParams) (err error) {
 	if rec.conf.CryptoAlgo == AlgoAES { // AES 256 CBC 加密
 		if params.UserID != "" {
-			if params.UserID, err = aes.CBC().Encrypt(params.UserID, rec.conf.CryptoSecret); err != nil {
+			if params.UserID, err = aes.CBC().Encrypt(rec.conf.CryptoSecret, params.UserID); err != nil {
 				return
 			}
 		}
 		if params.Ext != "" {
-			if params.Ext, err = aes.CBC().Encrypt(params.Ext, rec.conf.CryptoSecret); err != nil {
+			if params.Ext, err = aes.CBC().Encrypt(rec.conf.CryptoSecret, params.Ext); err != nil {
 				return
 			}
 		}
 	}
 	if rec.conf.CryptoAlgo == AlgoSM4 { // SM4 128 CBC 加密
 		if params.UserID != "" {
-			if params.UserID, err = gm.Sm4().Encrypt("CBC", rec.conf.CryptoSecret, params.UserID, false); err != nil {
+			if params.UserID, err = gm.Sm4().Encrypt(rec.conf.CryptoSecret, params.UserID, "CBC", false); err != nil {
 				return
 			}
 		}
 		if params.Ext != "" {
-			if params.Ext, err = gm.Sm4().Encrypt("CBC", rec.conf.CryptoSecret, params.Ext, false); err != nil {
+			if params.Ext, err = gm.Sm4().Encrypt(rec.conf.CryptoSecret, params.Ext, "CBC", false); err != nil {
 				return
 			}
 		}
