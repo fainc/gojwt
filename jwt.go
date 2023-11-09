@@ -36,11 +36,11 @@ func (rec *jwtClient) check(params *IssueParams) (err error) {
 		return errors.New("unsupported algo")
 	}
 	// 签发参数校验
-	if params.Duration <= 0 || params.Subject == "" {
-		return errors.New("issuer:params missing")
+	if params.Duration <= 0 || params.Subject == "" || len(params.Audience) == 0 {
+		return errors.New("issuer: duration / subject / audience missing")
 	}
 	if params.UUID == "" && params.UID == 0 {
-		return errors.New("issuer:params missing")
+		return errors.New("issuer:uid / uuid missing")
 	}
 	return
 }
@@ -66,7 +66,7 @@ func (rec *jwtClient) Publish(params *IssueParams) (token, jwtID string, err err
 	rec.defaultParams(params)
 	// 构造JWT
 	claims := TokenClaims{
-		CustomClaims{
+		PayloadClaims{
 			params.UID,
 			params.UUID,
 			params.IP,
@@ -122,10 +122,7 @@ func (rec *jwtClient) verifyLifeCycle(token *jwt.Token, lifeCycle time.Duration)
 	return
 }
 func (rec *jwtClient) validateOptions(params *ValidateParams) (opts []jwt.ParserOption) {
-	opts = append(opts, jwt.WithSubject(params.Subject))
-	if params.Audience != "" {
-		opts = append(opts, jwt.WithAudience(params.Audience))
-	}
+	opts = append(opts, jwt.WithSubject(params.Subject), jwt.WithAudience(params.Audience))
 	if params.Issuer != "" {
 		opts = append(opts, jwt.WithIssuer(params.Issuer))
 	}
@@ -166,6 +163,9 @@ func (rec *jwtClient) keyHandle(token *jwt.Token) (interface{}, error) {
 func (rec *jwtClient) Validate(params *ValidateParams) (res *TokenClaims, err error) {
 	if params.Subject == "" {
 		return nil, errors.New("subject invalid")
+	}
+	if params.Audience == "" {
+		return nil, errors.New("audience invalid")
 	}
 	tokenStr, err := rec.tokenFormat(params.Token) // token格式化校验
 	if err != nil {

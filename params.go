@@ -17,7 +17,7 @@ type JwtConfig struct {
 	JwtSecret  string            `dc:"*(根据算法二选一) jwt签名密钥，根据签名算法选择，HS256应传不低于32位字符密钥加签"`
 }
 
-type CustomClaims struct {
+type PayloadClaims struct {
 	UID  int64                  `json:"uid,omitempty"`  // int64类型用户编码
 	UUID string                 `json:"uuid,omitempty"` // string类型UUID
 	IP   string                 `json:"ip,omitempty"`   // 签发客户端IP，用于辅助验证
@@ -25,14 +25,14 @@ type CustomClaims struct {
 	Ext  map[string]interface{} `json:"ext,omitempty"`
 }
 type TokenClaims struct {
-	CustomClaims
+	PayloadClaims
 	jwt.RegisteredClaims
 }
 
 type ValidateParams struct {
 	Subject   string        `json:"subject" dc:"* jwt主题键"`
 	Token     string        `json:"token" dc:"* 待验证token 需要Bearer标识符"`
-	Audience  string        `json:"audience" dc:"可选，验证作用域，传入的值需在颁发时定义的授权作用域列表内，如传递则严格验证，不传递则不验证"`
+	Audience  string        `json:"audience" dc:"* 验证作用域，传入的值需在颁发时定义的授权作用域列表内"`
 	Issuer    string        `json:"issuer" dc:"可选，签发者标记（可用于分布式签发端标记等），如传递则严格验证，不传递则不验证"`
 	Leeway    time.Duration `json:"leeway" dc:"可选，时间(exp、nbf)验证窗口期，一般用于token外部续期维护或跨系统时间同步宽容"`
 	LeewayNbf bool          `json:"leewayNbf" dc:"可选，时间验证窗口期是否适用于nbf，Leeway用于token外部续期维护等情况时建议否，仅用于时间同步宽容时允许是"`
@@ -42,9 +42,9 @@ type ValidateParams struct {
 type IssueParams struct {
 	Subject   string        `json:"subject"`          // * jwt主题键，如：UserAuth 用户验证 , Access 临时权限验证等
 	Duration  time.Duration `json:"duration"`         // * 授权时长
-	Audience  []string      `json:"audience"`         // 可选，授权作用域列表，验证时可判断授权是否在颁发列表内
+	Audience  []string      `json:"audience"`         // * 授权作用域列表，验证时判断授权是否在颁发列表内
 	NotBefore time.Time     `json:"notBefore"`        // 可选，启用时间
 	JwtID     string        `json:"jwtID,omitempty"`  // 可选，自定义 jti，不传使用随机uuid
 	Issuer    string        `json:"issuer,omitempty"` // 可选，签发者标记（可用于分布式签发端标记等）
-	CustomClaims
+	PayloadClaims
 }
