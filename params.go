@@ -18,11 +18,11 @@ type JwtConfig struct {
 }
 
 type PayloadClaims struct {
-	UID  int64                  `json:"uid,omitempty"`  // int64类型用户编码
-	UUID string                 `json:"uuid,omitempty"` // string类型UUID
-	IP   string                 `json:"ip,omitempty"`   // 签发客户端IP，用于辅助验证
-	UA   string                 `json:"ua,omitempty"`   // 签发客户端UA SUM ，用于辅助验证
-	Ext  map[string]interface{} `json:"ext,omitempty"`
+	UID   int64                  `json:"uid,omitempty"`   // int64类型用户编码
+	UUID  string                 `json:"uuid,omitempty"`  // string类型UUID
+	RegIP string                 `json:"regIP,omitempty"` // 签发客户端IP，用于辅助验证
+	RegUA string                 `json:"regUA,omitempty"` // 签发客户端UA SUM ，用于辅助验证
+	Ext   map[string]interface{} `json:"ext,omitempty"`
 }
 type TokenClaims struct {
 	PayloadClaims

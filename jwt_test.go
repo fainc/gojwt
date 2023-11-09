@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func TestIssuer_Publish(t *testing.T) {
+func TestIssuer_Publish_HS256(t *testing.T) {
 	j := NewJwt(JwtConfig{JwtSecret: "12345678123456781234567812345678", JwtAlgo: AlgoHS256})
 	publish, _, err := j.Publish(&IssueParams{
 		Subject:  "Auth",
@@ -15,10 +15,10 @@ func TestIssuer_Publish(t *testing.T) {
 		JwtID:    "",
 		Issuer:   "SSO",
 		PayloadClaims: PayloadClaims{
-			UID: 1,
-			Ext: map[string]interface{}{"name": "lin"},
-			IP:  "127.0.0.1",
-			UA:  "sum",
+			UID:   1,
+			Ext:   map[string]interface{}{"name": "lin"},
+			RegIP: "127.0.0.1",
+			RegUA: "test ua",
 		},
 	})
 	if err != nil {
