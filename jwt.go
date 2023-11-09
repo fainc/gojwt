@@ -66,11 +66,13 @@ func (rec *jwtClient) Publish(params *IssueParams) (token, jwtID string, err err
 	rec.defaultParams(params)
 	// 构造JWT
 	claims := TokenClaims{
-		params.UID,
-		params.UUID,
-		params.IP,
-		params.UA,
-		params.Ext,
+		CustomClaims{
+			params.UID,
+			params.UUID,
+			params.IP,
+			params.UA,
+			params.Ext,
+		},
 		jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(params.Duration)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),

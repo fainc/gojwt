@@ -13,7 +13,7 @@ func TestIssuer_Publish(t *testing.T) {
 		UID:      111,
 		Duration: 1 * time.Second,
 		Audience: nil,
-		Ext:      "",
+		Ext:      nil,
 		JwtID:    "",
 		Issuer:   "",
 	})
@@ -37,5 +37,5 @@ func TestIssuer_Publish(t *testing.T) {
 	}
 	fmt.Println(raw.UUID)
 	fmt.Println(raw.UID)
-	fmt.Println(raw)
+	fmt.Println(raw.Ext)
 }

@@ -17,12 +17,15 @@ type JwtConfig struct {
 	JwtSecret  string            `dc:"*(根据算法二选一) jwt签名密钥，根据签名算法选择，HS256应传不低于32位字符密钥加签"`
 }
 
+type CustomClaims struct {
+	UID  int64                  `json:"uid,omitempty"`  // int64类型用户编码
+	UUID string                 `json:"uuid,omitempty"` // string类型UUID
+	IP   string                 `json:"ip,omitempty"`   // 签发客户端IP，用于辅助验证
+	UA   string                 `json:"ua,omitempty"`   // 签发客户端UA SUM ，用于辅助验证
+	Ext  map[string]interface{} `json:"ext,omitempty"`
+}
 type TokenClaims struct {
-	UID  int64  `json:"uid,omitempty"`  // int64类型用户编码
-	UUID string `json:"uuid,omitempty"` // string类型UUID
-	IP   string `json:"ip,omitempty"`   // 签发IP，用于辅助验证
-	UA   string `json:"ua,omitempty"`   // 签发客户端SUM信息，用于辅助验证
-	Ext  string `json:"ext,omitempty"`
+	CustomClaims
 	jwt.RegisteredClaims
 }
 
@@ -38,14 +41,10 @@ type ValidateParams struct {
 
 type IssueParams struct {
 	Subject   string        `json:"subject"`          // * jwt主题键，如：UserAuth 用户验证 , Access 临时权限验证等
-	UID       int64         `json:"uid,omitempty"`    // int64类型用户编码 UID 或 UUID 二选一
-	UUID      string        `json:"uuid,omitempty"`   // * string 类型 UUID 或 UID 二选一
 	Duration  time.Duration `json:"duration"`         // * 授权时长
 	Audience  []string      `json:"audience"`         // 可选，授权作用域列表，验证时可判断授权是否在颁发列表内
 	NotBefore time.Time     `json:"notBefore"`        // 可选，启用时间
-	Ext       string        `json:"ext,omitempty"`    // 可选，额外用户信息，例如邮箱、昵称等，不建议存储用户敏感数据，如存储敏感数据请进行加密。
 	JwtID     string        `json:"jwtID,omitempty"`  // 可选，自定义 jti，不传使用随机uuid
 	Issuer    string        `json:"issuer,omitempty"` // 可选，签发者标记（可用于分布式签发端标记等）
-	IP        string        `json:"ip,omitempty"`     // 签发IP，用于辅助验证
-	UA        string        `json:"ua,omitempty"`     // 签发客户端SUM信息，用于辅助验证
+	CustomClaims
 }
