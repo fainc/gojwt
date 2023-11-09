@@ -68,6 +68,8 @@ func (rec *jwtClient) Publish(params *IssueParams) (token, jwtID string, err err
 	claims := TokenClaims{
 		params.UserID,
 		params.UUID,
+		params.IssueIP,
+		params.IssueClient,
 		params.Ext,
 		jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(params.Duration)),
