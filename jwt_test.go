@@ -10,7 +10,7 @@ func TestIssuer_Publish(t *testing.T) {
 	j := NewJwt(JwtConfig{JwtSecret: "12345678123456781234567812345678", JwtAlgo: AlgoHS256})
 	publish, _, err := j.Publish(&IssueParams{
 		Subject:  "Auth",
-		UserID:   111,
+		UID:      111,
 		Duration: 1 * time.Second,
 		Audience: nil,
 		Ext:      "",
@@ -36,6 +36,6 @@ func TestIssuer_Publish(t *testing.T) {
 		return
 	}
 	fmt.Println(raw.UUID)
-	fmt.Println(raw.UserID)
+	fmt.Println(raw.UID)
 	fmt.Println(raw)
 }

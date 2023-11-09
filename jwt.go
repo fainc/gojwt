@@ -39,7 +39,7 @@ func (rec *jwtClient) check(params *IssueParams) (err error) {
 	if params.Duration <= 0 || params.Subject == "" {
 		return errors.New("issuer:params missing")
 	}
-	if params.UUID == "" && params.UserID == 0 {
+	if params.UUID == "" && params.UID == 0 {
 		return errors.New("issuer:params missing")
 	}
 	return
@@ -66,10 +66,10 @@ func (rec *jwtClient) Publish(params *IssueParams) (token, jwtID string, err err
 	rec.defaultParams(params)
 	// 构造JWT
 	claims := TokenClaims{
-		params.UserID,
+		params.UID,
 		params.UUID,
-		params.IssueIP,
-		params.IssueClient,
+		params.IP,
+		params.UA,
 		params.Ext,
 		jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(params.Duration)),
