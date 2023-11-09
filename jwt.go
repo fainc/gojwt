@@ -10,18 +10,18 @@ import (
 	"github.com/google/uuid"
 )
 
-type jwtClient struct {
+type JwtClient struct {
 	JwtConfig
 }
 
-func NewJwt(conf JwtConfig) *jwtClient {
-	return &jwtClient{
+func NewJwt(conf JwtConfig) *JwtClient {
+	return &JwtClient{
 		conf,
 	}
 }
 
 // check 签发基础信息核验
-func (rec *jwtClient) check(params *IssueParams) (err error) {
+func (rec *JwtClient) check(params *IssueParams) (err error) {
 	// 基础配置校验
 	switch rec.JwtAlgo { // 签名算法校验
 	case AlgoHS256:
@@ -44,7 +44,7 @@ func (rec *jwtClient) check(params *IssueParams) (err error) {
 	}
 	return
 }
-func (rec *jwtClient) defaultParams(params *IssueParams) {
+func (rec *JwtClient) defaultParams(params *IssueParams) {
 	if params.JwtID == "" {
 		params.JwtID = strings.ToUpper(uuid.NewString())
 	}
@@ -54,7 +54,7 @@ func (rec *jwtClient) defaultParams(params *IssueParams) {
 }
 
 // Publish 颁发token
-func (rec *jwtClient) Publish(params *IssueParams) (token, jwtID string, err error) {
+func (rec *JwtClient) Publish(params *IssueParams) (token, jwtID string, err error) {
 	// 基础信息校验
 	if err = rec.check(params); err != nil {
 		return
@@ -92,7 +92,7 @@ func (rec *jwtClient) Publish(params *IssueParams) (token, jwtID string, err err
 	return token, params.JwtID, err
 }
 
-func (rec *jwtClient) verifyNotBefore(token *jwt.Token) (err error) {
+func (rec *JwtClient) verifyNotBefore(token *jwt.Token) (err error) {
 	var nbf *jwt.NumericDate
 	if nbf, err = token.Claims.GetNotBefore(); err != nil || nbf == nil {
 		return errors.New("token nbf is unverifiable")
@@ -102,7 +102,7 @@ func (rec *jwtClient) verifyNotBefore(token *jwt.Token) (err error) {
 	}
 	return
 }
-func (rec *jwtClient) verifyLifeCycle(token *jwt.Token, lifeCycle time.Duration) (err error) {
+func (rec *JwtClient) verifyLifeCycle(token *jwt.Token, lifeCycle time.Duration) (err error) {
 	var iss *jwt.NumericDate
 	if iss, err = token.Claims.GetIssuedAt(); err != nil || iss == nil {
 		return errors.New("token iss is unverifiable")
@@ -112,7 +112,7 @@ func (rec *jwtClient) verifyLifeCycle(token *jwt.Token, lifeCycle time.Duration)
 	}
 	return
 }
-func (rec *jwtClient) validateOptions(params *ValidateParams) (opts []jwt.ParserOption) {
+func (rec *JwtClient) validateOptions(params *ValidateParams) (opts []jwt.ParserOption) {
 	opts = append(opts, jwt.WithSubject(params.Subject))
 	if params.Audience != "" {
 		opts = append(opts, jwt.WithAudience(params.Audience))
@@ -126,7 +126,7 @@ func (rec *jwtClient) validateOptions(params *ValidateParams) (opts []jwt.Parser
 	return
 }
 
-func (rec *jwtClient) tokenFormat(token string) (string, error) {
+func (rec *JwtClient) tokenFormat(token string) (string, error) {
 	if token == "" {
 		return "", errors.New("token invalid")
 	}
@@ -137,7 +137,7 @@ func (rec *jwtClient) tokenFormat(token string) (string, error) {
 	return tokenMap[1], nil
 }
 
-func (rec *jwtClient) keyHandle(token *jwt.Token) (interface{}, error) {
+func (rec *JwtClient) keyHandle(token *jwt.Token) (interface{}, error) {
 	if rec.JwtAlgo == AlgoHS256 {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("signing algo unverifiable")
@@ -154,7 +154,7 @@ func (rec *jwtClient) keyHandle(token *jwt.Token) (interface{}, error) {
 }
 
 // Validate 核验JWT
-func (rec *jwtClient) Validate(params *ValidateParams) (res *TokenClaims, err error) {
+func (rec *JwtClient) Validate(params *ValidateParams) (res *TokenClaims, err error) {
 	if params.Subject == "" {
 		return nil, errors.New("subject invalid")
 	}
@@ -187,7 +187,7 @@ func (rec *jwtClient) Validate(params *ValidateParams) (res *TokenClaims, err er
 }
 
 // ParseRaw 解析原始token数据，只验签，不核验（外部token可能格式或核验规则与本库不兼容，导致Validate无法正常处理，验签解析原始数据map后自行处理）
-func (rec *jwtClient) ParseRaw(tokenB string) (res jwt.MapClaims, err error) {
+func (rec *JwtClient) ParseRaw(tokenB string) (res jwt.MapClaims, err error) {
 	tokenStr, err := rec.tokenFormat(tokenB) // token格式化校验
 	if err != nil {
 		return
