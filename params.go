@@ -20,6 +20,7 @@ type JwtConfig struct {
 type PayloadClaims struct {
 	UID         int64                  `json:"uid,omitempty"`         // int64类型用户编码
 	UUID        string                 `json:"uuid,omitempty"`        // string类型UUID
+	TenantId    int64                  `json:"tenantId,omitempty"`    // int64类型租户编码，用于多租户场景
 	RegIP       string                 `json:"regIP,omitempty"`       // 注册客户端IP，用于辅助验证
 	RegUA       string                 `json:"regUA,omitempty"`       // 注册客户端UA SUM ，用于辅助验证
 	RegDeviceID string                 `json:"regDeviceID,omitempty"` // 注册客户端设备ID ，用于辅助验证
